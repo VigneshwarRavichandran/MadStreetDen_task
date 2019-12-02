@@ -16,7 +16,7 @@ $ docker-compose up
 
 ## Get Started
 
-#### Pre-execution
+#### Pre-execution:
 
 The pre-execution is done by `MadStreetDen_task/pyspark_script/prepare_and_execute.sh`. 
 
