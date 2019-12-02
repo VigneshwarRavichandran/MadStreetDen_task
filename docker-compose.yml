@@ -1,0 +1,40 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    expose:
+      - '6379'
+    ports:
+      - '6379:6379'
+  spark-master:
+    image: bde2020/spark-master:2.4.4-hadoop2.7
+    container_name: spark-master
+    volumes:
+      - "./pyspark_script:/pyspark_script"
+    links:
+      - redis
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+      - JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+    entrypoint:
+      - ./pyspark_script/prepare_and_execute.sh
+
+  spark-worker-1:
+    image: bde2020/spark-worker:2.4.4-hadoop2.7
+    container_name: spark-worker-1
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+  app:
+    build: .
+    links:
+      - redis
+    ports:
+      - "8000:8000"
