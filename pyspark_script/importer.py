@@ -16,13 +16,13 @@ def loading_data(filename):
         .appName("Reading large .csv file") \
         .config("spark.some.config.option", "pyspark_config") \
         .getOrCreate()
-    datasets = spark_sc.read.csv(filename, header=True, sep=",")
+    dataframe = spark_sc.read.csv(filename, header=True, sep=",")
     product_ids = []
-    for dataset in datasets.rdd.collect():
-        product_id = dataset['id']
-        brand = dataset['brand']
-        colors = dataset['colors']
-        date_added = dataset['dateAdded']
+    for row in dataframe.rdd.collect():
+        product_id = row['id']
+        brand = row['brand']
+        colors = row['colors']
+        date_added = row['dateAdded']
         if all([product_id, brand, colors, date_added]):
             if product_id not in product_ids:
                 """
@@ -51,6 +51,11 @@ def loading_data(filename):
                 product_ids.append(product_id)
 
 def import_data_to_redis():
+    """
+    Used multiprocessing for loading data of all csv files in parallel way
+    Column arrangements of every csv files differs in order.
+    So, value is assigned incorrectly.
+    """
     filenames = glob.glob(os.path.join('./', '*.csv'))
     process = multiprocessing.Pool(len(filenames))
     process.map(loading_data, filenames)
